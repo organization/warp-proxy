@@ -1,12 +1,19 @@
 {
+  "name": "warp-proxy",
+  "author": "nlog",
+  "license": "MIT",
   "dependencies": {
     "@types/node": "^20.10.5"
   },
   "devDependencies": {
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "socks-proxy-agent": "^8.0.2",
+    "ts-node": "^10.9.2",
+    "axios": "^1.6.2"
   },
   "scripts": {
     "build": "npx tsc",
-    "start": "npx tsc watch"
+    "start": "npx tsc watch",
+    "test": "npx ts-node tests/test.ts"
   }
 }

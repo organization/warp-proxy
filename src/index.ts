@@ -1,5 +1,7 @@
 import {spawn, ChildProcess} from 'node:child_process'
-import {mkdir, stat, appendFile, rm} from "node:fs/promises";
+import {mkdir, access, appendFile, rm} from "node:fs/promises";
+import {platform} from "node:os";
+import * as os from "os";
 
 const generateRandomString = (length: number) => {
     let result = '';
@@ -37,7 +39,12 @@ class Proxy {
     async startService() {
         do {
             this.path = `${__dirname}/wg/${generateRandomString(16)}`;
-        } while ((await stat(this.path)).isDirectory());
+            try {
+                await access(this.path);
+            } catch (e) {
+                break;
+            }
+        } while (true);
         await mkdir(this.path);
 
         await runCommand(this.config.getWgcf(), ["register", "--accept-tos"], this.path);
@@ -47,15 +54,29 @@ class Proxy {
 
         this.process = spawn(this.config.getWireproxy(), ["-c", `${this.path}/wgcf-profile.conf`], {
             cwd: this.path,
-            stdio: "ignore",
+            stdio: "pipe",
+        });
+
+        this.process.on("close", () => {
+            rm(this.path, {
+                recursive: true,
+            });
+        })
+
+        return new Promise(r => {
+            this.process.stdout?.on("data", data => {
+                if (data.toString().indexOf("receive incoming v4 - started") !== -1) {
+                    r(true);
+                }
+            });
         });
     }
 
-    async stopService() {
+    stopService() {
         this.process.kill(0);
-        await rm(this.path, {
-            recursive: true,
-        });
+        if (platform() === "win32") {
+            spawn("taskkill", ["/pid", this.process.pid?.toString()!, "/f", "/t"]);
+        }
     }
 }
 
@@ -81,12 +102,14 @@ class WarpProxy {
     }
 
     async init() {
-        if ((await stat(`${__dirname}/wg`)).isDirectory()) {
+        try {
+            await access(`${__dirname}/wg`);
             await rm(`${__dirname}/wg`, {
                 recursive: true,
             });
+        } finally {
+            await mkdir(`${__dirname}/wg`);
         }
-        await mkdir(`${__dirname}/wg`);
     }
 }
 
