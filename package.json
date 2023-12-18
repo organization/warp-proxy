@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "@types/node": "^20.10.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "scripts": {
+    "build": "npx tsc",
+    "start": "npx tsc watch"
+  }
+}
