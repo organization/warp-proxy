@@ -8,12 +8,12 @@
   "devDependencies": {
     "typescript": "^5.3.3",
     "socks-proxy-agent": "^8.0.2",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.6.2",
     "axios": "^1.6.2"
   },
   "scripts": {
     "build": "npx tsc",
     "start": "npx tsc watch",
-    "test": "npx ts-node tests/test.ts"
+    "test": "npx tsx tests/test.ts"
   }
 }
